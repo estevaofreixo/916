@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Formulário Datas + Valores</title>
+<style>
+body { font-family: Arial, sans-serif; margin: 20px; }
+label { font-weight: bold; }
+input[type="date"], input[type="text"], button, textarea { font-size:14px; width: 120px; padding:5px; box-sizing:border-box; }
+
+/* Container geral: todas as colunas lado a lado */
+.container-geral { display: flex; gap: 30px; align-items: flex-start; }
+
+/* Cada coluna */
+.column { display: flex; flex-direction: column; gap: 10px; position: relative; }
+
+/* Valores ao lado da primeira e segunda coluna */
+.valor-lado { position: absolute; left: 150px; top: 0; display:flex; flex-direction:column; gap:10px; }
+
+/* Campo Depósito 30% e nova coluna juntos */
+.column-deposito { display:flex; flex-direction: column; gap:10px; align-self:flex-start; }
+
+/* Modal */
+.modal { display: none; position: fixed; z-index: 1; padding-top: 100px; left:0; top:0; width:100%; height:100%; background-color: rgba(0,0,0,0.5);}
+.modal-content { background-color: #fefefe; margin: auto; padding: 20px; border: 1px solid #888; width: 350px; display:flex; flex-direction: column; gap:10px;}
+.modal-content input, .modal-content textarea, .modal-content button { width: 100%; padding:5px; font-size:14px; }
+.modal-buttons { display:flex; justify-content: space-between; margin-top: 10px; }
+
+/* Modal arrastável */
+#modalValoresHeader { cursor:move; background:#eee; padding:5px; font-weight:bold; }
+</style>
+</head>
+<body>
+
+<h1>Execução parcelada - 916 CPC</h1>
+
+<div class="container-geral">
+    <!-- Coluna 1 -->
+    <div class="column" id="coluna1">
+        <h3>Datas</h3>
+        <div style="display:flex; align-items:center; gap:5px;">
+            <input type="date" id="coluna1_1">
+            <span id="v_col1_1"></span>
+        </div>
+        <div style="display:flex; align-items:center; gap:5px;">
+            <input type="date" id="coluna1_2">
+            <span id="v_col1_2"></span>
+        </div>
+        <div style="display:flex; align-items:center; gap:5px;">
+            <input type="date" id="coluna1_3">
+            <span id="v_col1_3"></span>
+        </div>
+        <div style="display:flex; align-items:center; gap:5px;">
+            <input type="date" id="coluna1_4">
+            <span id="v_col1_4"></span>
+        </div>
+        <div style="display:flex; align-items:center; gap:5px;">
+            <input type="date" id="coluna1_5">
+            <span id="v_col1_5"></span>
+        </div>
+        <div style="display:flex; align-items:center; gap:5px;">
+            <input type="date" id="coluna1_6">
+            <span id="v_col1_6"></span>
+        </div>
+        <button onclick="abrirModalDatas('coluna1')">Inserir</button>
+    </div>
+
+    <!-- Coluna 2 -->
+    <div class="column" id="coluna2">
+        <h3>Datas Pag</h3>
+        <div style="display:flex; align-items:center; gap:5px;">
+            <input type="date" id="coluna2_1">
+            <span id="v_col2_1"></span>
+        </div>
+        <div style="display:flex; align-items:center; gap:5px;">
+            <input type="date" id="coluna2_2">
+            <span id="v_col2_2"></span>
+        </div>
+        <div style="display:flex; align-items:center; gap:5px;">
+            <input type="date" id="coluna2_3">
+            <span id="v_col2_3"></span>
+        </div>
+        <div style="display:flex; align-items:center; gap:5px;">
+            <input type="date" id="coluna2_4">
+            <span id="v_col2_4"></span>
+        </div>
+        <div style="display:flex; align-items:center; gap:5px;">
+            <input type="date" id="coluna2_5">
+            <span id="v_col2_5"></span>
+        </div>
+        <div style="display:flex; align-items:center; gap:5px;">
+            <input type="date" id="coluna2_6">
+            <span id="v_col2_6"></span>
+        </div>
+        <button onclick="abrirModalDatas('coluna2')">Inserir</button>
+    </div>
+
+    <!-- Coluna 3: Pagamentos -->
+<div class="column" id="colunaPag">
+    <h3>Pagamentos</h3>
+    <div style="display:flex; align-items:center; gap:5px;">
+        <input type="text" id="pag_1" onblur="formatarMoeda(this)">        
+    </div>
+    <div style="display:flex; align-items:center; gap:5px;">
+        <input type="text" id="pag_2" onblur="formatarMoeda(this)">
+    </div>
+    <div style="display:flex; align-items:center; gap:5px;">
+        <input type="text" id="pag_3" onblur="formatarMoeda(this)">
+    </div>
+    <div style="display:flex; align-items:center; gap:5px;">
+        <input type="text" id="pag_4" onblur="formatarMoeda(this)">
+    </div>
+    <div style="display:flex; align-items:center; gap:5px;">
+        <input type="text" id="pag_5" onblur="formatarMoeda(this)">
+    </div>
+    <div style="display:flex; align-items:center; gap:5px;">
+        <input type="text" id="pag_6" onblur="formatarMoeda(this)">
+    </div>
+    <button onclick="abrirModalPagamentos()">Inserir</button>
+</div>
+
+
+    <!-- Coluna Homologação -->
+    <div class="column" id="coluna3">
+        <h3>Homologação</h3>
+        <div style="display:flex; align-items:center; gap:5px;">
+            <label style="width:90px;">Principal:</label>
+            <input type="text" id="val_principal" onblur="formatarMoeda(this)">
+        </div>
+        <div style="display:flex; align-items:center; gap:5px;">
+            <label style="width:90px;">FGTS:</label>
+            <input type="text" id="val_fgts" onblur="formatarMoeda(this)">
+        </div>
+        <div style="display:flex; align-items:center; gap:5px;">
+            <label style="width:90px;">INSS RTE:</label>
+            <input type="text" id="val_inss_rte" onblur="formatarMoeda(this)">
+        </div>
+        <div style="display:flex; align-items:center; gap:5px;">
+            <label style="width:90px;">INSS RDA:</label>
+            <input type="text" id="val_inss_rda" onblur="formatarMoeda(this)">
+        </div>
+        <div style="display:flex; align-items:center; gap:5px;">
+            <label style="width:90px;">IR:</label>
+            <input type="text" id="val_ir" onblur="formatarMoeda(this)">
+        </div>
+        <div style="display:flex; align-items:center; gap:5px;">
+            <label style="width:90px;">Honorários:</label>
+            <input type="text" id="val_honorarios" onblur="formatarMoeda(this)">
+        </div>
+        <div style="display:flex; align-items:center; gap:5px;">
+            <label style="width:90px;">Custas:</label>
+            <input type="text" id="val_custas" onblur="formatarMoeda(this)">
+        </div>
+        <button onclick="abrirModalValores()" style="width:100%;">Inserir</button>
+    </div>
+
+    <!-- Campo Depósito 30% -->
+    <div class="column-deposito">
+        <h3>Depósito 30%</h3>
+        <input type="text" id="val_deposito" onblur="formatarMoeda(this); atualizarValoresParcelas()">
+        
+        <!-- Campos Totais (abaixo do depósito) -->
+        <div id="totais-container" style="display: flex; flex-direction: column; align-items: flex-start; margin-top: 15px; gap: 8px;">
+            <div style="display: flex; flex-direction: column;">
+                <label for="total">Total</label>
+                <input type="text" id="total" readonly style="width: 120px;">
+            </div>
+
+            <div style="display: flex; flex-direction: column;">
+                <label for="totalPago">Total pago</label>
+                <input type="text" id="totalPago" readonly style="width: 120px;">
+            </div>
+
+            <div style="display: flex; flex-direction: column;">
+                <label for="diferenca">Diferença</label>
+                <input type="text" id="diferenca" readonly style="width: 120px;">
+            </div>
+        </div> 
+        
+        <!-- Dentro da coluna-deposito, depois dos campos totais -->
+        <div style="margin-top: 20px; display:flex; justify-content: space-between; align-items: center;">
+            <button id="btnMulta" onclick="calcularMulta()" 
+                style="font-size:16px; padding:10px 25px; cursor:pointer;">
+                Multa
+            </button>
+            <span id="multaResultado" style="font-weight:bold; margin-left:10px;"></span>
+        </div>
+
+
+
+    </div>
+
+       
+</div>
+<!-- Modais -->
+<div id="modalDatas" class="modal">
+    <div class="modal-content">
+        <h3>Inserir Datas</h3>
+        <textarea id="modalTextarea" placeholder="Cole datas, uma por linha" rows="6"></textarea>
+        <div class="modal-buttons">
+            <button onclick="confirmarModalDatas()">OK</button>
+            <button onclick="fecharModal('modalDatas')">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<div id="modalValores" class="modal">
+    <div class="modal-content" id="modalValoresContent">
+        <div id="modalValoresHeader">Editar Valores da Homologação</div>
+        <textarea id="modalTextareaValores" placeholder="Cole valores: Principal, FGTS, INSS RTE, INSS RDA, IR, Honorários, Custas" rows="7"></textarea>
+        <div class="modal-buttons">
+            <button onclick="confirmarModalValores()">OK</button>
+            <button onclick="fecharModal('modalValores')">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<div id="modalPagamentos" class="modal">
+    <div class="modal-content">
+        <h3>Inserir Valores de Pagamento</h3>
+        <textarea id="modalTextareaPagamentos" placeholder="Cole os valores de pagamento, um por linha" rows="6"></textarea>
+        <div class="modal-buttons">
+            <button onclick="confirmarModalPagamentos()">OK</button>
+            <button onclick="fecharModal('modalPagamentos')">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+
+<script>
+let colunaAtual = '';
+let dataInicialUsuario = null; // data informada no modal da coluna 1
+
+// --- Funções Datas ---
+function abrirModalDatas(coluna){
+    colunaAtual = coluna;
+    document.getElementById('modalDatas').style.display = 'block';
+    if(coluna==='coluna1'){
+        document.getElementById('modalTextarea').value = '';
+    } else {
+        let valores = [];
+        for(let i=1;i<=6;i++){
+            let val = document.getElementById(`${coluna}_${i}`).value;
+            if(val) valores.push(val);
+        }
+        document.getElementById('modalTextarea').value = valores.join('\n');
+    }
+}
+function confirmarModalDatas(){
+    let linhas = document.getElementById('modalTextarea').value.split('\n');
+    if(colunaAtual==='coluna1' && linhas[0]){
+        dataInicialUsuario = parseData(linhas[0]); // salvar a data inicial informada pelo usuário
+        let deposito = new Date(dataInicialUsuario);
+        for(let i=1;i<=6;i++){
+            document.getElementById(`${colunaAtual}_${i}`).value = adicionarMeses(dataInicialUsuario,i);
+        }
+        atualizarValoresParcelas();
+    } else if(colunaAtual==='coluna2'){
+        for(let i=0;i<6;i++){
+            document.getElementById(`${colunaAtual}_${i+1}`).value = linhas[i] ? parseData(linhas[i]) : '';
+        }
+        atualizarValoresColuna2();
+    }
+    fecharModal('modalDatas');
+}
+function parseData(str){
+    str = str.trim();
+    if(!str) return '';
+    let partes = str.split('/');
+    if(partes.length!==3) return '';
+    let d = partes[0].padStart(2,'0');
+    let m = partes[1].padStart(2,'0');
+    let a = partes[2].trim();
+    if(a.length===2) a='20'+a;
+    return `${a}-${m}-${d}`;
+}
+function adicionarMeses(dataStr, meses){
+    let partes = dataStr.split('-');
+    let data = new Date(partes[0], partes[1]-1, partes[2]);
+    data.setMonth(data.getMonth() + meses);
+    let d = String(data.getDate()).padStart(2,'0');
+    let m = String(data.getMonth()+1).padStart(2,'0');
+    let a = data.getFullYear();
+    return `${a}-${m}-${d}`;
+}
+
+// --- Funções Homologação ---
+function abrirModalValores(){
+    document.getElementById('modalValores').style.display='block';
+    let valores = [
+        document.getElementById('val_principal').value,
+        document.getElementById('val_fgts').value,
+        document.getElementById('val_inss_rte').value,
+        document.getElementById('val_inss_rda').value,
+        document.getElementById('val_ir').value,
+        document.getElementById('val_honorarios').value,
+        document.getElementById('val_custas').value
+    ];
+    document.getElementById('modalTextareaValores').value = valores.join('\n');
+}
+function confirmarModalValores(){
+    let linhas = document.getElementById('modalTextareaValores').value.split('\n');
+    let ids = ['val_principal','val_fgts','val_inss_rte','val_inss_rda','val_ir','val_honorarios','val_custas'];
+    for(let i=0;i<ids.length;i++){
+        document.getElementById(ids[i]).value = formatarMoedaTexto(linhas[i]);
+    }
+    fecharModal('modalValores');
+    atualizarValoresParcelas();
+}
+
+// --- Formatação moeda ---
+function formatarMoeda(input){ input.value=formatarMoedaTexto(input.value); }
+function formatarMoedaTexto(valor){
+    if(!valor) return '';
+    valor = valor.toString().replace(/\./g,'').replace(/,/g,'.').replace(/[^\d.]/g,'');
+    let numero = parseFloat(valor);
+    if(isNaN(numero)) return '';
+    return numero.toLocaleString('pt-BR',{minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+// --- Atualiza valores parcelas ao lado da primeira coluna ---
+function atualizarValoresParcelas(){
+    let valPrincipal = parseFloat(document.getElementById('val_principal').value.replace(/\./g,'').replace(',','.')) || 0;
+    let valDeposito = parseFloat(document.getElementById('val_deposito').value.replace(/\./g,'').replace(',','.')) || 0;
+    
+    let saldo = valPrincipal - valDeposito;
+    let parcelaBase = saldo / 6;
+
+    for(let i=1;i<=6;i++){
+        let parcela = parcelaBase * (1 + 0.01*i); // 1% ao mês incremental
+        document.getElementById(`v_col1_${i}`).textContent = parcela.toLocaleString('pt-BR',{minimumFractionDigits:2, maximumFractionDigits:2});
+    }
+
+    atualizarValoresColuna2(); // atualiza coluna2 quando mudar valores principais
+    atualizarTotais(); // <--- chama aqui
+}
+
+// --- Atualiza valores da coluna 2 ---
+function atualizarValoresColuna2(){
+    if(!dataInicialUsuario) return; // precisa da data inicial
+    let valPrincipal = parseFloat(document.getElementById('val_principal').value.replace(/\./g,'').replace(',','.')) || 0;
+    let valDeposito = parseFloat(document.getElementById('val_deposito').value.replace(/\./g,'').replace(',','.')) || 0;
+    let saldo = valPrincipal - valDeposito;
+    let parcelaBase = saldo / 6;
+
+    let dataBase = new Date(dataInicialUsuario);
+
+    for(let i=1;i<=6;i++){
+        let dataCol2 = document.getElementById(`coluna2_${i}`).value;
+        if(!dataCol2) continue;
+        let partes = dataCol2.split('-');
+        let dataAtual = new Date(partes[0], partes[1]-1, partes[2]);
+        // diferença em meses entre dataCol2 e dataInicialUsuario
+        let diffMeses = (dataAtual.getFullYear() - dataBase.getFullYear())*12 + (dataAtual.getMonth() - dataBase.getMonth());
+        let parcela = parcelaBase * (1+0.01*(diffMeses-1));
+        document.getElementById(`v_col2_${i}`).textContent = parcela.toLocaleString('pt-BR',{minimumFractionDigits:2, maximumFractionDigits:2});
+    }
+}
+
+// --- Fecha modais clicando fora ---
+window.onclick=function(event){
+    if(event.target==document.getElementById('modalDatas')) fecharModal('modalDatas');
+    if(event.target==document.getElementById('modalValores')) fecharModal('modalValores');
+};
+
+// --- Fechar modal ---
+function fecharModal(id){ document.getElementById(id).style.display='none'; }
+
+// --- Modal Pagamentos ---
+function abrirModalPagamentos(){
+    let valores = [];
+    for(let i=1;i<=6;i++){
+        let val = document.getElementById(`pag_${i}`).value;
+        if(val) valores.push(val);
+    }
+    document.getElementById('modalTextareaPagamentos').value = valores.join('\n');
+    document.getElementById('modalPagamentos').style.display = 'block';
+}
+
+function confirmarModalPagamentos(){
+    let linhas = document.getElementById('modalTextareaPagamentos').value.split('\n');
+    for(let i=0;i<6;i++){
+        let val = linhas[i] ? linhas[i].trim() : '';
+        document.getElementById(`pag_${i+1}`).value = formatarMoedaTexto(val);
+    }
+    fecharModal('modalPagamentos');
+    atualizarTotais(); // <--- chama aqui
+}
+
+// --- Gera texto e abre em nova aba ---
+function gerarTexto() {
+    // Valores Homologação
+    let homologacao = [
+        {label: 'Principal', id: 'val_principal'},
+        {label: 'FGTS', id: 'val_fgts'},
+        {label: 'INSS RTE', id: 'val_inss_rte'},
+        {label: 'INSS RDA', id: 'val_inss_rda'},
+        {label: 'IR', id: 'val_ir'},
+        {label: 'Honorários', id: 'val_honorarios'},
+        {label: 'Custas', id: 'val_custas'}
+    ];
+
+    let homologacaoTexto = '';
+    for (let item of homologacao) {
+        let valorStr = document.getElementById(item.id).value.trim() || '0,00';
+        let valorNum = parseFloat(valorStr.replace(/\./g,'').replace(',','.')) || 0;
+        if (valorNum !== 0) {
+            homologacaoTexto += `${item.label}: R$ ${valorStr}\n`;
+        }
+    }
+
+    // Depósito 30%
+    let deposito = document.getElementById('val_deposito').value || '0,00';
+
+    // Parcelas
+    let parcelasTexto = '';
+    let totalParcelasNum = 0;
+    for(let i=1; i<=6; i++){
+        let data = document.getElementById(`coluna1_${i}`).value || '';
+        let valorStr = document.getElementById(`v_col1_${i}`).textContent || '0,00';
+        let valorNum = parseFloat(valorStr.replace(/\./g,'').replace(',','.')) || 0;
+        totalParcelasNum += valorNum;
+
+        if(data){
+            let partes = data.split('-'); // yyyy-mm-dd -> dd/mm/yyyy
+            data = `${partes[2]}/${partes[1]}/${partes[0]}`;
+        }
+        parcelasTexto += `${i}ª parcela: ${data} - R$ ${valorStr}\n`;
+    }
+
+    // Calcula multa (10% sobre parcelas não pagas)
+    let totalMultaBase = 0;
+    for (let i = 1; i <= 6; i++) {
+        let pagamento = document.getElementById(`pag_${i}`).value;
+        let parcelaStr = document.getElementById(`v_col1_${i}`).textContent;
+        let parcelaNum = parseFloat(parcelaStr.replace(/\./g,'').replace(',','.')) || 0;
+        if (!pagamento && parcelaNum) {
+            totalMultaBase += parcelaNum;
+        }
+    }
+    let multaNum = totalMultaBase * 0.10;
+
+    // Total geral
+    let totalGeralNum = totalParcelasNum + multaNum;
+
+    // Formata valores
+    let totalParcelas = totalParcelasNum.toLocaleString('pt-BR',{minimumFractionDigits:2, maximumFractionDigits:2});
+    let multaStr = multaNum.toLocaleString('pt-BR',{minimumFractionDigits:2, maximumFractionDigits:2});
+    let totalGeralStr = totalGeralNum.toLocaleString('pt-BR',{minimumFractionDigits:2, maximumFractionDigits:2});
+
+    // Pagamentos
+    let pagamentosTexto = '';
+    let totalPagamentosNum = 0;
+    for(let i=1; i<=6; i++){
+        let data = document.getElementById(`coluna2_${i}`)?.value || '';
+        let valorStr = document.getElementById(`pag_${i}`).value || '';
+        if(!valorStr) continue;
+        let valorNum = parseFloat(valorStr.replace(/\./g,'').replace(',','.')) || 0;
+        totalPagamentosNum += valorNum;
+
+        if(data){
+            let partes = data.split('-'); 
+            data = `${partes[2]}/${partes[1]}/${partes[0]}`;
+        } else {
+            data = 'Sem data';
+        }
+        pagamentosTexto += `${i}º pagamento: ${data} - R$ ${valorStr}\n`;
+    }
+    let totalPagamentos = totalPagamentosNum.toLocaleString('pt-BR',{minimumFractionDigits:2, maximumFractionDigits:2});
+
+    // Diferença devida
+    let diferencaNum = totalGeralNum - totalPagamentosNum;
+    let diferenca = diferencaNum.toLocaleString('pt-BR',{minimumFractionDigits:2, maximumFractionDigits:2});
+
+    // Monta o texto final
+    let texto = `Resumo da Execução Parcelada - Art. 916 CPC
+
+Valores da Homologação:
+${homologacaoTexto}
+Depósito 30%: R$ ${deposito}
+
+Parcelas (Datas e Valores):
+${parcelasTexto}
+Total parcelamento – R$ ${totalParcelas}
+Multa – R$ ${multaStr}
+Total geral – R$ ${totalGeralStr}
+
+Pagamentos (Datas e Valores Atualizados):
+${pagamentosTexto}
+Total pagamentos – R$ ${totalPagamentos}
+
+Diferença devida – R$ ${diferenca}`;
+
+  // Copia automaticamente para a área de transferência
+    navigator.clipboard.writeText(texto).then(() => {
+        alert("Texto copiado para a área de transferência!");
+    }).catch(err => {
+        console.error("Erro ao copiar para a área de transferência: ", err);
+    });
+
+    // Abre em nova aba
+    let novaAba = window.open('', '_blank');
+    novaAba.document.write(`<pre style="font-family:Arial, sans-serif; font-size:14px;">${texto}</pre>`);
+    novaAba.document.close();
+}
+
+
+
+// --- Função auxiliar para data ---
+function formatarDataBR(dataISO) {
+    if (!dataISO) return '';
+    const [ano, mes, dia] = dataISO.split('-');
+    return `${dia}/${mes}/${ano}`;
+}
+
+// --- Atualiza Totais ---
+function atualizarTotais() {
+    let totalParcelas = 0;
+    let totalPagamentos = 0;
+
+    // Soma das parcelas
+    for (let i = 1; i <= 6; i++) {
+        let parcela = document.getElementById(`v_col1_${i}`).textContent;
+        let valorParcela = parseFloat(parcela.replace(/\./g,'').replace(',','.')) || 0;
+        totalParcelas += valorParcela;
+    }
+
+    // Soma dos pagamentos
+    for (let i = 1; i <= 6; i++) {
+        let pagamento = document.getElementById(`pag_${i}`).value;
+        let valorPagamento = parseFloat(pagamento.replace(/\./g,'').replace(',','.')) || 0;
+        totalPagamentos += valorPagamento;
+    }
+
+    // Atualiza os campos
+    document.getElementById('total').value = totalParcelas.toLocaleString('pt-BR',{minimumFractionDigits:2, maximumFractionDigits:2});
+    document.getElementById('totalPago').value = totalPagamentos.toLocaleString('pt-BR',{minimumFractionDigits:2, maximumFractionDigits:2});
+    document.getElementById('diferenca').value = (totalParcelas - totalPagamentos).toLocaleString('pt-BR',{minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+
+
+// Atualiza automaticamente quando houver mudança
+document.addEventListener('input', atualizarTotais);
+
+function calcularMulta() {
+    let totalMulta = 0;
+
+    for (let i = 1; i <= 6; i++) {
+        let pagamento = document.getElementById(`pag_${i}`).value;
+        let parcela = document.getElementById(`v_col1_${i}`).textContent;
+
+        if (!pagamento && parcela) { // se pagamento vazio e parcela existe
+            let valorParcela = parseFloat(parcela.replace(/\./g,'').replace(',','.')) || 0;
+            totalMulta += valorParcela;
+        }
+    }
+
+    let multa = totalMulta * 0.10; // 10%
+    document.getElementById('multaResultado').textContent = 'R$ ' + multa.toLocaleString('pt-BR',{minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+// torna as janelas arrastáveis
+
+// --- Torna qualquer modal arrastável ---
+// Substitua pela nova versão
+function tornarArrastavel(modalContent) {
+    if (!modalContent) return;
+
+    let arrastando = false;
+    let offsetX = 0;
+    let offsetY = 0;
+
+    // garante que o modal tenha left/top iniciais (centraliza se necessário)
+    function garantirPosicaoInicial() {
+        const style = window.getComputedStyle(modalContent);
+        if (!style.left || style.left === 'auto') {
+            const rect = modalContent.getBoundingClientRect();
+            const left = Math.max((window.innerWidth - rect.width) / 2, 10);
+            const top = Math.max((window.innerHeight - rect.height) / 3, 10);
+            modalContent.style.left = `${left}px`;
+            modalContent.style.top = `${top}px`;
+        }
+        // define position fixed para poder mover com left/top
+        modalContent.style.position = 'fixed';
+        modalContent.style.margin = '0';
+        modalContent.style.zIndex = '1000';
+    }
+
+    // Inicia arraste: somente se o clique estiver dentro do modal e FORA de uma <textarea>
+    function onMouseDown(e) {
+        // só reage a cliques com o botão esquerdo
+        if (e.button !== 0) return;
+
+        // o clique precisa estar dentro do modal
+        if (!modalContent.contains(e.target)) return;
+
+        // se o clique foi dentro de uma textarea (ou filho dela), não arrasta
+        if (e.target.closest && e.target.closest('textarea')) return;
+
+        // opcional: se quiser também evitar arrastar ao clicar em inputs/botoes, poderia checar:
+        // if (e.target.closest && e.target.closest('input, button, select')) return;
+
+        e.preventDefault();
+        garantirPosicaoInicial();
+
+        const rect = modalContent.getBoundingClientRect();
+        offsetX = e.clientX - rect.left;
+        offsetY = e.clientY - rect.top;
+        arrastando = true;
+
+        // muda cursor pra indicar arraste
+        document.body.style.userSelect = 'none';
+        modalContent.style.cursor = 'grabbing';
+    }
+
+    function onMouseMove(e) {
+        if (!arrastando) return;
+        e.preventDefault();
+
+        let left = e.clientX - offsetX;
+        let top = e.clientY - offsetY;
+
+        // Limites para não perder o modal fora da tela (ajuste margens se quiser)
+        const rect = modalContent.getBoundingClientRect();
+        const minLeft = 0;
+        const minTop = 0;
+        const maxLeft = window.innerWidth - rect.width;
+        const maxTop = window.innerHeight - rect.height;
+
+        if (left < minLeft) left = minLeft;
+        if (top < minTop) top = minTop;
+        if (left > maxLeft) left = maxLeft;
+        if (top > maxTop) top = maxTop;
+
+        modalContent.style.left = `${left}px`;
+        modalContent.style.top = `${top}px`;
+    }
+
+    function onMouseUp() {
+        if (!arrastando) return;
+        arrastando = false;
+        document.body.style.userSelect = '';
+        modalContent.style.cursor = '';
+    }
+
+    // Eventos no documento para capturar movimentos mesmo se o mouse sair do modal
+    document.addEventListener('mousedown', onMouseDown);
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+
+    // Remoção segura (se precisar) - não sendo usada automaticamente, mas deixo como referência:
+    // return function cleanup() {
+    //     document.removeEventListener('mousedown', onMouseDown);
+    //     document.removeEventListener('mousemove', onMouseMove);
+    //     document.removeEventListener('mouseup', onMouseUp);
+    // };
+}
+
+// Inicialização (substitua sua window.onload por esta versão ou inclua estes trechos)
+window.addEventListener('load', () => {
+    // atenção: passa-se o .modal-content (não o overlay .modal) para arrastar
+    const mv = document.querySelector("#modalValores .modal-content");
+    const md = document.querySelector("#modalDatas .modal-content");
+    const mp = document.querySelector("#modalPagamentos .modal-content");
+
+    tornarArrastavel(mv);
+    tornarArrastavel(md);
+    tornarArrastavel(mp);
+});
+
+
+// Inicializa a função de arraste para cada modal
+window.onload = () => {
+    // Modal de valores – arrasta pelo cabeçalho
+    tornarArrastavel(document.getElementById("modalValoresContent"), "#modalValoresHeader");
+
+    // Modais de datas e pagamentos – arrasta pela caixa inteira
+    tornarArrastavel(document.querySelector("#modalDatas .modal-content"));
+    tornarArrastavel(document.querySelector("#modalPagamentos .modal-content"));
+};
+
+// 🔄 Atualiza automaticamente a Coluna 2 quando uma data de pagamento é alterada manualmente
+document.addEventListener("DOMContentLoaded", function() {
+    for (let i = 1; i <= 6; i++) {
+        const campoData = document.getElementById(`coluna2_${i}`);
+        if (campoData) {
+            campoData.addEventListener("change", function() {
+                atualizarValoresColuna2();
+            });
+        }
+    }
+});
+
+</script>
+
+<!-- Botão Gerar Texto -->
+<!-- Botão Gerar Texto -->
+<div style="margin-top: 30px; text-align: left;">
+    <button id="btnGerarTexto" onclick="gerarTexto()" 
+        style="font-size:16px; padding:10px 25px; cursor:pointer;">
+        Gerar texto
+    </button>
+</div>
+
+
+</body>
+</html>
