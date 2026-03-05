@@ -6,7 +6,7 @@
 <style>
 body { font-family: Arial, sans-serif; margin: 20px; }
 label { font-weight: bold; }
-input[type="date"], input[type="text"], button, textarea { font-size:14px; width: 140px; padding:5px; box-sizing:border-box; }
+input[type="date"], input[type="text"], button, textarea { font-size:14px; width: 120px; padding:5px; box-sizing:border-box; }
 
 /* Container geral: todas as colunas lado a lado */
 .container-geral { display: flex; gap: 30px; align-items: flex-start; }
@@ -352,7 +352,7 @@ function atualizarValoresColuna2(){
         let dataAtual = new Date(partes[0], partes[1]-1, partes[2]);
         // diferença em meses entre dataCol2 e dataInicialUsuario
         let diffMeses = (dataAtual.getFullYear() - dataBase.getFullYear())*12 + (dataAtual.getMonth() - dataBase.getMonth());
-        let parcela = parcelaBase * (1+0.01*(diffMeses-1));
+        let parcela = parcelaBase * (1+0.01*(diffMeses));
         document.getElementById(`v_col2_${i}`).textContent = parcela.toLocaleString('pt-BR',{minimumFractionDigits:2, maximumFractionDigits:2});
     }
 }
@@ -413,21 +413,46 @@ function gerarTexto() {
     let deposito = document.getElementById('val_deposito').value || '0,00';
 
     // Parcelas
-    let parcelasTexto = '';
+    // Parcelas - cronograma original (coluna 1)
+    let parcelasCronogramaTexto = '';
     let totalParcelasNum = 0;
+
     for(let i=1; i<=6; i++){
+
         let data = document.getElementById(`coluna1_${i}`).value || '';
         let valorStr = document.getElementById(`v_col1_${i}`).textContent || '0,00';
+
         let valorNum = parseFloat(valorStr.replace(/\./g,'').replace(',','.')) || 0;
+        
         totalParcelasNum += valorNum;
 
+
         if(data){
-            let partes = data.split('-'); // yyyy-mm-dd -> dd/mm/yyyy
+            let partes = data.split('-');
             data = `${partes[2]}/${partes[1]}/${partes[0]}`;
         }
-        parcelasTexto += `${i}ª parcela: ${data} - R$ ${valorStr}\n`;
+
+        parcelasCronogramaTexto += `${i}ª parcela: ${data} - R$ ${valorStr}\n`;
     }
 
+
+
+    
+    let parcelasTexto = '';
+
+    for(let i=1; i<=6; i++){
+        let data = document.getElementById(`coluna2_${i}`).value || '';
+        let valorStr = document.getElementById(`v_col2_${i}`).textContent || '0,00';
+        let valorNum = parseFloat(valorStr.replace(/\./g,'').replace(',','.')) || 0;
+
+        
+        if(data){
+            let partes = data.split('-');
+            data = `${partes[2]}/${partes[1]}/${partes[0]}`;
+        }
+
+        parcelasTexto += `${i}ª parcela: ${data} - R$ ${valorStr}\n`;
+    }
     // Calcula multa (10% sobre parcelas não pagas)
     let totalMultaBase = 0;
     for (let i = 1; i <= 6; i++) {
@@ -479,13 +504,17 @@ Valores da Homologação:
 ${homologacaoTexto}
 Depósito 30%: R$ ${deposito}
 
-Parcelas (Datas e Valores):
-${parcelasTexto}
+Valor das parcelas: 
+${parcelasCronogramaTexto}
+
 Total parcelamento – R$ ${totalParcelas}
 Multa – R$ ${multaStr}
 Total geral – R$ ${totalGeralStr}
 
-Pagamentos (Datas e Valores Atualizados):
+Atualização dos valores:
+${parcelasTexto}
+
+Valores pagos:
 ${pagamentosTexto}
 Total pagamentos – R$ ${totalPagamentos}
 
