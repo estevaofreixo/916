@@ -28,6 +28,19 @@ input[type="date"], input[type="text"], button, textarea { font-size:14px; width
 
 /* Modal arrastável */
 #modalValoresHeader { cursor:move; background:#eee; padding:5px; font-weight:bold; }
+
+.modal-header {
+    cursor: move;
+    background: #eee;
+    padding: 8px;
+    font-weight: bold;
+    border-bottom: 1px solid #ccc;
+}
+
+.modal-header {
+    user-select: none;
+}
+
 </style>
 </head>
 <body>
@@ -195,7 +208,7 @@ input[type="date"], input[type="text"], button, textarea { font-size:14px; width
 <!-- Modais -->
 <div id="modalDatas" class="modal">
     <div class="modal-content">
-        <h3>Inserir Datas</h3>
+        <div class="modal-header">Inserir Datas</div>
         <textarea id="modalTextarea" placeholder="Cole datas, uma por linha" rows="6"></textarea>
         <div class="modal-buttons">
             <button onclick="confirmarModalDatas()">OK</button>
@@ -206,7 +219,7 @@ input[type="date"], input[type="text"], button, textarea { font-size:14px; width
 
 <div id="modalValores" class="modal">
     <div class="modal-content" id="modalValoresContent">
-        <div id="modalValoresHeader">Editar Valores da Homologação</div>
+        <div class="modal-header">Editar Valores da Homologação</div>
         <textarea id="modalTextareaValores" placeholder="Cole valores: Principal, FGTS, INSS RTE, INSS RDA, IR, Honorários, Custas" rows="7"></textarea>
         <div class="modal-buttons">
             <button onclick="confirmarModalValores()">OK</button>
@@ -217,7 +230,7 @@ input[type="date"], input[type="text"], button, textarea { font-size:14px; width
 
 <div id="modalPagamentos" class="modal">
     <div class="modal-content">
-        <h3>Inserir Valores de Pagamento</h3>
+        <div class="modal-header">Inserir Valores de Pagamento</div>
         <textarea id="modalTextareaPagamentos" placeholder="Cole os valores de pagamento, um por linha" rows="6"></textarea>
         <div class="modal-buttons">
             <button onclick="confirmarModalPagamentos()">OK</button>
@@ -230,6 +243,8 @@ input[type="date"], input[type="text"], button, textarea { font-size:14px; width
 <script>
 let colunaAtual = '';
 let dataInicialUsuario = null; // data informada no modal da coluna 1
+let multaAplicada = false;
+let valorMultaCalculada = 0;
 
 // --- Funções Datas ---
 function abrirModalDatas(coluna){
@@ -320,6 +335,11 @@ function formatarMoedaTexto(valor){
 
 // --- Atualiza valores parcelas ao lado da primeira coluna ---
 function atualizarValoresParcelas(){
+    multaAplicada = false;
+    valorMultaCalculada = 0;
+    document.getElementById('multaResultado').textContent = '';
+    document.getElementById('btnMulta').textContent = 'Multa';
+    document.getElementById('btnMulta').style.backgroundColor = '';
     let valPrincipal = parseFloat(document.getElementById('val_principal').value.replace(/\./g,'').replace(',','.')) || 0;
     let valDeposito = parseFloat(document.getElementById('val_deposito').value.replace(/\./g,'').replace(',','.')) || 0;
     
@@ -435,6 +455,7 @@ function gerarTexto() {
         parcelasCronogramaTexto += `${i}ª parcela: ${data} - R$ ${valorStr}\n`;
     }
 
+        parcelasCronogramaTexto = parcelasCronogramaTexto.trim();
 
 
     
@@ -442,10 +463,12 @@ function gerarTexto() {
 
     for(let i=1; i<=6; i++){
         let data = document.getElementById(`coluna2_${i}`).value || '';
-        let valorStr = document.getElementById(`v_col2_${i}`).textContent || '0,00';
+        let valorStr = document.getElementById(`v_col2_${i}`).textContent || '';
         let valorNum = parseFloat(valorStr.replace(/\./g,'').replace(',','.')) || 0;
 
-        
+        // 👉 IGNORA parcelas vazias
+        if(!data && valorNum === 0) continue;
+
         if(data){
             let partes = data.split('-');
             data = `${partes[2]}/${partes[1]}/${partes[0]}`;
@@ -453,6 +476,8 @@ function gerarTexto() {
 
         parcelasTexto += `${i}ª parcela: ${data} - R$ ${valorStr}\n`;
     }
+
+    let haParcelasEfetivas = parcelasTexto.trim() !== '';
     // Calcula multa (10% sobre parcelas não pagas)
     let totalMultaBase = 0;
     for (let i = 1; i <= 6; i++) {
@@ -463,7 +488,7 @@ function gerarTexto() {
             totalMultaBase += parcelaNum;
         }
     }
-    let multaNum = totalMultaBase * 0.10;
+    let multaNum = multaAplicada ? valorMultaCalculada : 0;
 
     // Total geral
     let totalGeralNum = totalParcelasNum + multaNum;
@@ -491,6 +516,7 @@ function gerarTexto() {
         }
         pagamentosTexto += `${i}º pagamento: ${data} - R$ ${valorStr}\n`;
     }
+    let haPagamentos = pagamentosTexto.trim() !== '';
     let totalPagamentos = totalPagamentosNum.toLocaleString('pt-BR',{minimumFractionDigits:2, maximumFractionDigits:2});
 
     // Diferença devida
@@ -504,21 +530,23 @@ Valores da Homologação:
 ${homologacaoTexto}
 Depósito 30%: R$ ${deposito}
 
-Valor das parcelas: 
+Data de pagamento e atualização das parcelas, conforme art. 916 do CPC:
 ${parcelasCronogramaTexto}
 
 Total parcelamento – R$ ${totalParcelas}
-Multa – R$ ${multaStr}
-Total geral – R$ ${totalGeralStr}
+${multaNum > 0 ? `Multa – R$ ${multaStr}\n` : ''}Total geral – R$ ${totalGeralStr}
 
-Atualização dos valores:
-${parcelasTexto}
+${haParcelasEfetivas ? `Valor à época de seu efetivo pagamento:
+${parcelasTexto}` : ''}
 
-Valores pagos:
+${haPagamentos ? `Datas e valores dos pagamentos realizados:
 ${pagamentosTexto}
-Total pagamentos – R$ ${totalPagamentos}
+Total pagamentos – R$ ${totalPagamentos}` : ''}
 
-Diferença devida – R$ ${diferenca}`;
+${haPagamentos 
+  ? `Diferença devida – R$ ${diferenca}` 
+  : `Total devido – R$ ${totalGeralStr}`}
+`;
 
   // Copia automaticamente para a área de transferência
     navigator.clipboard.writeText(texto).then(() => {
@@ -564,7 +592,9 @@ function atualizarTotais() {
     // Atualiza os campos
     document.getElementById('total').value = totalParcelas.toLocaleString('pt-BR',{minimumFractionDigits:2, maximumFractionDigits:2});
     document.getElementById('totalPago').value = totalPagamentos.toLocaleString('pt-BR',{minimumFractionDigits:2, maximumFractionDigits:2});
-    document.getElementById('diferenca').value = (totalParcelas - totalPagamentos).toLocaleString('pt-BR',{minimumFractionDigits:2, maximumFractionDigits:2});
+    let totalComMulta = totalParcelas + (multaAplicada ? valorMultaCalculada : 0);
+    document.getElementById('diferenca').value =
+        (totalComMulta - totalPagamentos).toLocaleString('pt-BR',{minimumFractionDigits:2, maximumFractionDigits:2});
 }
 
 
@@ -573,20 +603,41 @@ function atualizarTotais() {
 document.addEventListener('input', atualizarTotais);
 
 function calcularMulta() {
+
+    multaAplicada = !multaAplicada;
+
+    // DESATIVAR
+    if (!multaAplicada) {
+        valorMultaCalculada = 0;
+        document.getElementById('multaResultado').textContent = '';
+        document.getElementById('btnMulta').textContent = 'Multa';
+        document.getElementById('btnMulta').style.backgroundColor = '';
+        atualizarTotais();
+        return;
+    }
+
+    // ATIVAR
     let totalMulta = 0;
 
     for (let i = 1; i <= 6; i++) {
         let pagamento = document.getElementById(`pag_${i}`).value;
         let parcela = document.getElementById(`v_col1_${i}`).textContent;
 
-        if (!pagamento && parcela) { // se pagamento vazio e parcela existe
+        if (!pagamento && parcela) {
             let valorParcela = parseFloat(parcela.replace(/\./g,'').replace(',','.')) || 0;
             totalMulta += valorParcela;
         }
     }
 
-    let multa = totalMulta * 0.10; // 10%
-    document.getElementById('multaResultado').textContent = 'R$ ' + multa.toLocaleString('pt-BR',{minimumFractionDigits:2, maximumFractionDigits:2});
+    valorMultaCalculada = totalMulta * 0.10;
+
+    document.getElementById('multaResultado').textContent =
+        'R$ ' + valorMultaCalculada.toLocaleString('pt-BR',{minimumFractionDigits:2});
+
+    document.getElementById('btnMulta').textContent = 'Multa ✔';
+    document.getElementById('btnMulta').style.backgroundColor = '#c8f7c5';
+
+    atualizarTotais();
 }
 
 // torna as janelas arrastáveis
@@ -596,96 +647,61 @@ function calcularMulta() {
 function tornarArrastavel(modalContent) {
     if (!modalContent) return;
 
+    // 🚫 evita múltiplos listeners
+    if (modalContent.dataset.dragAtivado === "true") return;
+    modalContent.dataset.dragAtivado = "true";
+
+    const header = modalContent.querySelector('.modal-header');
+    if (!header) return;
+
     let arrastando = false;
     let offsetX = 0;
     let offsetY = 0;
 
-    // garante que o modal tenha left/top iniciais (centraliza se necessário)
-    function garantirPosicaoInicial() {
-        const style = window.getComputedStyle(modalContent);
-        if (!style.left || style.left === 'auto') {
-            const rect = modalContent.getBoundingClientRect();
-            const left = Math.max((window.innerWidth - rect.width) / 2, 10);
-            const top = Math.max((window.innerHeight - rect.height) / 3, 10);
-            modalContent.style.left = `${left}px`;
-            modalContent.style.top = `${top}px`;
-        }
-        // define position fixed para poder mover com left/top
-        modalContent.style.position = 'fixed';
-        modalContent.style.margin = '0';
-        modalContent.style.zIndex = '1000';
-    }
+    // posição inicial
+    const rectInicial = modalContent.getBoundingClientRect();
+    modalContent.style.position = 'fixed';
+    modalContent.style.margin = '0';
+    modalContent.style.left = rectInicial.left + 'px';
+    modalContent.style.top = rectInicial.top + 'px';
 
-    // Inicia arraste: somente se o clique estiver dentro do modal e FORA de uma <textarea>
-    function onMouseDown(e) {
-        // só reage a cliques com o botão esquerdo
+    header.addEventListener('mousedown', function(e) {
         if (e.button !== 0) return;
 
-        // o clique precisa estar dentro do modal
-        if (!modalContent.contains(e.target)) return;
-
-        // se o clique foi dentro de uma textarea (ou filho dela), não arrasta
-        if (e.target.closest && e.target.closest('textarea')) return;
-
-        // opcional: se quiser também evitar arrastar ao clicar em inputs/botoes, poderia checar:
-        // if (e.target.closest && e.target.closest('input, button, select')) return;
-
-        e.preventDefault();
-        garantirPosicaoInicial();
+        arrastando = true;
 
         const rect = modalContent.getBoundingClientRect();
         offsetX = e.clientX - rect.left;
         offsetY = e.clientY - rect.top;
-        arrastando = true;
 
-        // muda cursor pra indicar arraste
+        header.style.cursor = 'grabbing';
         document.body.style.userSelect = 'none';
-        modalContent.style.cursor = 'grabbing';
-    }
+    });
 
-    function onMouseMove(e) {
+    document.addEventListener('mousemove', function(e) {
+        // 🚫 impede interferência entre modais
         if (!arrastando) return;
-        e.preventDefault();
 
-        let left = e.clientX - offsetX;
-        let top = e.clientY - offsetY;
+        let x = e.clientX - offsetX;
+        let y = e.clientY - offsetY;
 
-        // Limites para não perder o modal fora da tela (ajuste margens se quiser)
         const rect = modalContent.getBoundingClientRect();
-        const minLeft = 0;
-        const minTop = 0;
-        const maxLeft = window.innerWidth - rect.width;
-        const maxTop = window.innerHeight - rect.height;
 
-        if (left < minLeft) left = minLeft;
-        if (top < minTop) top = minTop;
-        if (left > maxLeft) left = maxLeft;
-        if (top > maxTop) top = maxTop;
+        x = Math.max(0, Math.min(x, window.innerWidth - rect.width));
+        y = Math.max(0, Math.min(y, window.innerHeight - rect.height));
 
-        modalContent.style.left = `${left}px`;
-        modalContent.style.top = `${top}px`;
-    }
+        modalContent.style.left = x + 'px';
+        modalContent.style.top = y + 'px';
+    });
 
-    function onMouseUp() {
+    document.addEventListener('mouseup', function() {
         if (!arrastando) return;
+
         arrastando = false;
+        header.style.cursor = 'move';
         document.body.style.userSelect = '';
-        modalContent.style.cursor = '';
-    }
-
-    // Eventos no documento para capturar movimentos mesmo se o mouse sair do modal
-    document.addEventListener('mousedown', onMouseDown);
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);
-
-    // Remoção segura (se precisar) - não sendo usada automaticamente, mas deixo como referência:
-    // return function cleanup() {
-    //     document.removeEventListener('mousedown', onMouseDown);
-    //     document.removeEventListener('mousemove', onMouseMove);
-    //     document.removeEventListener('mouseup', onMouseUp);
-    // };
+    });
 }
-
 // Inicialização (substitua sua window.onload por esta versão ou inclua estes trechos)
 window.addEventListener('load', () => {
     // atenção: passa-se o .modal-content (não o overlay .modal) para arrastar
@@ -698,16 +714,6 @@ window.addEventListener('load', () => {
     tornarArrastavel(mp);
 });
 
-
-// Inicializa a função de arraste para cada modal
-window.onload = () => {
-    // Modal de valores – arrasta pelo cabeçalho
-    tornarArrastavel(document.getElementById("modalValoresContent"), "#modalValoresHeader");
-
-    // Modais de datas e pagamentos – arrasta pela caixa inteira
-    tornarArrastavel(document.querySelector("#modalDatas .modal-content"));
-    tornarArrastavel(document.querySelector("#modalPagamentos .modal-content"));
-};
 
 // 🔄 Atualiza automaticamente a Coluna 2 quando uma data de pagamento é alterada manualmente
 document.addEventListener("DOMContentLoaded", function() {
@@ -735,6 +741,13 @@ document.addEventListener("DOMContentLoaded", function() {
 
 </body>
 </html>
+
+
+
+
+
+
+
 
 
 
